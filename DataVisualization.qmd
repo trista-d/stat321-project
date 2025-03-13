@@ -1,0 +1,62 @@
+---
+title: "Data Visualization Final Project"
+author: "Karen Nickel"
+format: html
+editor: visual
+---
+
+## Data Visualization Comments/Criteria
+
+8\. Can we use R packages like ggplot2 or plotly for visualization?\
+➢ Yes! You are free to use any R packages we discussed in class. Just make sure you\
+cite the package in the references.
+
+\
+9. How many visualizations are required?\
+➢ There is no fixed number, but you should create at least 3-5 visualizations that help\
+explain your dataset and analysis.
+
+\
+10. Do we need interactive visualizations?\
+➢ Interactive visualizations are optional, but they can enhance your project and\
+improve your presentation score.
+
+## Import and Read Dataset - must redo for the final cleaned version
+
+```{r}
+library(readr)
+cleaned_nfl_data <- read_csv("final_clean_nfl.csv")
+View(cleaned_nfl_data)
+```
+
+## Visualizations: Performance vs. Salary
+
+Big plays: Touchdowns vs. Salary
+
+-   scatter for all
+
+-   bar chart for top 10 and bottom 10
+
+Consistency: Yards vs. Salary
+
+-   scatter for all
+
+-   bar chart for top 10 and bottom 10
+
+Plot 1: Histogram: Salary distribution among receivers.
+
+Plots 2 and 3: If yards by salary more important for scatter, do bar chart for the touchdowns.
+
+-   do one or the other; one of each.
+
+Plot 4: Heat map (use tableau). because everything should connect back to salary.
+
+-   this will use catch rate in it, and the 20-39 and 40+ columns, compared to salary as the colours.
+
+Plot 5: Dashboard to support conclusions. So and so was the best of the season.
+
+-   will pull the top plays from youtube and link them.
+
+-   This will be a table with highlighted stuff and plays attached.
+
+-   Will decide which players to put in the table/dashboard in based on figure results/regression results.
