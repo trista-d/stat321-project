@@ -31,23 +31,23 @@ View(cleaned_nfl_data)
 
 ## Visualizations: Performance vs. Salary
 
-Big plays: Touchdowns vs. Salary
+**Big plays: Touchdowns vs. Salary**
 
--   scatter for all
+-   **scatter for all**
 
--   bar chart for top 10 and bottom 10
+-   **bar chart for top 10 and bottom 10**
 
-Consistency: Yards vs. Salary
+**Consistency: Yards vs. Salary**
 
--   scatter for all
+-   **scatter for all**
 
--   bar chart for top 10 and bottom 10
+-   **bar chart for top 10 and bottom 10**
 
-Plot 1: Histogram: Salary distribution among receivers.
+**Plot 1: Histogram: Salary distribution among receivers.**
 
-Plots 2 and 3: If yards by salary more important for scatter, do bar chart for the touchdowns.
+**Plots 2 and 3: If yards by salary more important for scatter, do bar chart for the touchdowns.**
 
--   do one or the other; one of each.
+-   **do one or the other; one of each.**
 
 Plot 4: Heat map (use tableau). because everything should connect back to salary.
 
@@ -60,3 +60,169 @@ Plot 5: Dashboard to support conclusions. So and so was the best of the season.
 -   This will be a table with highlighted stuff and plays attached.
 
 -   Will decide which players to put in the table/dashboard in based on figure results/regression results.
+
+#### Setup:
+
+##### Importing final cleaned data under name "final_clean_nfl".
+
+```{r}
+library(readr)
+final_clean_nfl <- read_csv("final_clean_nfl.csv")
+View(final_clean_nfl)
+```
+
+#### Plot 1: histogram of Salary
+
+##### UI:
+
+```{r}
+library(ggplot2)
+
+ui_salary <- fluidPage(
+  titlePanel("Salary Histogram"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("bins",
+                  "Number of Bins:",
+                  min= 5,
+                  max= 50,
+                  value= 10) #Default is 10bins
+
+      ),
+    mainPanel(
+      plotOutput("histPlot") #Output placeholder for the histogram
+      ) 
+    )
+  )
+```
+
+##### Server:
+
+```{r}
+server_salary <- function(input,output){
+  output$histPlot <- renderPlot({      # use the Salary data from dataset
+    salary_data <- final_clean_nfl$Salary
+ #Create the histogram with user-defined bins
+ ggplot(data = data.frame(x = salary_data), aes(x = final_clean_nfl$Salary)) +
+   geom_histogram(bins = input$bins, fill = '#009E73', color = "white") + 
+   # green for $$
+  theme_minimal() +
+   labs(
+     title = "Histogram of NFL Receiver 2024 Salaries",
+     x = "Salary ($)",
+     y = "Frequency"
+     )
+  })
+}
+```
+
+##### Running the app:
+
+```{r, eval = FALSE}
+shinyApp(ui = ui_salary, server = server_salary)
+```
+
+From the histogram, we can see that the 2024 salaries of NFL recievers is heavily right skewed, with several extreme outliers with very high salaries.
+
+The untransformed salaries were plotted on the x axis in order to accurately visualize just how much higher the outlier salaries are, since plotting the log10 or square root transformed salaries may distort our understanding of the data.
+
+#### Log transformation version: 
+
+##### UI: 
+
+```{r}
+library(ggplot2)
+
+ui_salary <- fluidPage(
+  titlePanel("Salary Histogram"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("bins",
+                  "Number of Bins:",
+                  min= 5,
+                  max= 50,
+                  value= 10) #Default is 10bins
+
+      ),
+    mainPanel(
+      plotOutput("histPlot") #Output placeholder for the histogram
+      ) 
+    )
+  )
+```
+
+##### Server:
+
+```{r}
+server_salary <- function(input,output){
+  output$histPlot <- renderPlot({      # use the Salary data from dataset
+    salary_data <- log10(final_clean_nfl$Salary)
+ #Create the histogram with user-defined bins
+ ggplot(data = data.frame(x = salary_data), aes(x = final_clean_nfl$Salary)) +
+   geom_histogram(bins = input$bins, fill = '#009E73', color = "white") +
+   scale_x_log10() +
+  theme_minimal() +
+   labs(
+     title = "Histogram of NFL Receiver 2024 Salaries",
+     x = "log(Salary ($))",
+     y = "Frequency"
+     )
+  })
+}
+```
+
+##### Running the app:
+
+```{r}
+shinyApp(ui = ui_salary, server = server_salary)
+```
+
+#### Plot 2: Scatter plots of Salary as as function of Touchdowns or Yards
+
+##### Salary as a function of Touchdowns:
+
+```{r}
+ggplot(final_clean_nfl, aes(x = TD, y = Salary)) +
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
+  labs(title = "Salary vs. Touchdowns",
+       x = "Number of Touchdowns",
+       y = "2024 Salary ($)") +
+  # add a verticle line at the median TD
+  geom_line(aes(x = median(final_clean_nfl$TD)), color = "grey") +
+  theme_minimal() +
+  # label the players with highest salaries and highest number of touchdowns
+  geom_text(label = ifelse(final_clean_nfl$Salary > 12500000, final_clean_nfl$Player, ''), vjust = 1.4) +
+  geom_text(label = ifelse(final_clean_nfl$TD > 15, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
+  geom_text(label = ifelse(final_clean_nfl$TD > 11 & final_clean_nfl$TD < 13, final_clean_nfl$Player, ''), vjust = -1) +
+  annotate("text", label = "Median TD", x = median(final_clean_nfl$TD), y = 22500000, color = "grey")
+```
+
+There is no obvious trend between the total touchdowns made and a player's salary in 2024. However, it does appear that the players receiving the highest salaries are making more than the median number of touchdowns. That being said, the players making some of the highest numbers of touchdowns are not receiving very high salaries.
+
+The median was represented rather than the mean because the TD variable is skewed and has outliers.
+
+##### Salary as a function of Yards:
+
+Used this site <https://stackoverflow.com/questions/15624656/label-points-in-geom-point> to add labels to specific points on the plot.
+
+```{r}
+ggplot(final_clean_nfl, aes(x = Yds, y = Salary)) +
+  geom_point(size = 3, color = '#56B4E9') +   # size is for size of the points
+  labs(title = "Salary vs. Yards",
+       x = "Yards travelled with ball",
+       y = "2024 Salary ($)") +
+  # add a vertical line at the median Yds
+  geom_line(aes(x = median(final_clean_nfl$Yds)), color = "grey") +
+  theme_minimal() +
+  # highlight some of the highest salaries and some of the highest yards travelled
+  geom_text(label = ifelse(final_clean_nfl$Salary > 12500000, final_clean_nfl$Player, ''), vjust = 1.4) +
+  geom_text(label = ifelse(final_clean_nfl$Yds > 1600, final_clean_nfl$Player, ''), hjust = 0.7, vjust = 1.2) +
+  geom_text(label = ifelse(final_clean_nfl$Yds > 1500 & final_clean_nfl$Yds < 1600, final_clean_nfl$Player, ''), vjust = -1) + 
+  annotate("text", label = "Median Yards", x = (median(final_clean_nfl$Yds) - 10), y = 22500000, color = "grey")
+```
+
+There is no clear trend between the yards travelled with the ball and a player's salary in 2024. Some of the players receiving the highest salaries are travelling more than the median number of yards, but some are very close to or below the median. That being said, the players travelling some of the greatest distances are not receiving very high salaries.
+
+The two players who travelled the greatest number of yards with the ball did not have very high salaries, and the players receiving the highest salaries were usually above the median yards travelled, with one exception, but were still not travelling particularly exceptional distances.
+
+The median was represented rather than the mean because the yards variable is skewed and appears to have outliers.
