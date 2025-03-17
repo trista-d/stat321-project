@@ -226,3 +226,51 @@ There is no clear trend between the yards travelled with the ball and a player's
 The two players who travelled the greatest number of yards with the ball did not have very high salaries, and the players receiving the highest salaries were usually above the median yards travelled, with one exception, but were still not travelling particularly exceptional distances.
 
 The median was represented rather than the mean because the yards variable is skewed and appears to have outliers.
+
+#### Plot 3: Bar charts of Salary for top and bottom 10 touchdowns and yards. 
+
+##### Touchdowns: 
+
+Used this link <https://stackoverflow.com/questions/11857935/plot-the-average-values-for-each-level> to understand how to plot the average salary within each number of touchdowns on a geom_bar plot.
+
+```{r}
+# sorting the dataset by the number of touchdowns. 
+library(dplyr)
+sorted_TD_nfl <- final_clean_nfl %>%
+  arrange(desc(TD))
+
+# creating new datasets of the top and bottom 10 number of touchdowns. 
+bottom10_TD_nfl <- tail(sorted_TD_nfl, 10)
+top10_TD_nfl <- head(sorted_TD_nfl, 10)
+
+# plotting bar chart of salaries for the players who made the 10 least touchdowns. 
+ggplot(bottom10_TD_nfl, aes(x = factor(TD), y = Salary)) +
+  geom_bar(stat = "summary", fun = "mean", fill='#D55E00') +
+  labs(title = "Average 2024 Salary by Touchdowns", x = "Touchdowns", y = "2024 Salary ($)") + 
+  theme_minimal()
+
+# and 10 most touchdowns. 
+ggplot(top10_TD_nfl, aes(x = factor(TD), y = Salary)) +
+  geom_bar(stat = "summary", fun = "mean", fill='#D55E00') +
+  labs(title = "Average 2024 Salary by Touchdowns", x = "Touchdowns", y = "2024 Salary ($)") + 
+  theme_minimal()
+```
+
+NOTE: not really sure how useful these graphs are, because we don't really get much from touchdowns for this, because they are whole numbers so multiple people have the same number so we don't really get much.
+
+Instead tried just plotting average salary for each number of touchdowns so we can see everything at once. I think this would be a bit more useful.
+
+```{r}
+# sorting the dataset by the number of touchdowns. 
+library(dplyr)
+sorted_TD_nfl <- final_clean_nfl %>%
+  arrange(desc(TD))
+
+# plotting
+ggplot(sorted_TD_nfl, aes(x = factor(TD), y = Salary)) +
+  geom_bar(stat = "summary", fun = "mean", fill='#D55E00') +
+  labs(title = "Average 2024 Salary by Touchdowns", x = "Touchdowns", y = "2024 Salary ($)") + 
+  theme_minimal()
+```
+
+Can say from this that players making 10, 11, or 13 touchdowns tend to have a higher average salary than the other numbers of touchdowns. Making 13 touchdowns tends to result in the highest average salary, though this is because there was only one player in this category who happens to have a significant salary. Interestingly, making 17 touchdowns, the highest amount, resulted in a very low salary.
