@@ -31,17 +31,17 @@ View(cleaned_nfl_data)
 
 ## Visualizations: Performance vs. Salary
 
-**Big plays: Touchdowns vs. Salary**
+Big plays: Touchdowns vs. Salary
 
--   **scatter for all**
+-   scatter for all
 
--   **bar chart for top 10 and bottom 10**
+-   bar chart for top 10 and bottom 10
 
-**Consistency: Yards vs. Salary**
+Consistency: Yards vs. Salary
 
--   **scatter for all**
+-   scatter for all
 
--   **bar chart for top 10 and bottom 10**
+-   bar chart for top 10 and bottom 10
 
 **Plot 1: Histogram: Salary distribution among receivers.**
 
@@ -126,12 +126,15 @@ From the histogram, we can see that the 2024 salaries of NFL recievers is heavil
 
 The untransformed salaries were plotted on the x axis in order to accurately visualize just how much higher the outlier salaries are, since plotting the log10 or square root transformed salaries may distort our understanding of the data.
 
-#### Log transformation version: 
+#### Log transformation version:
 
-##### UI: 
+##### UI:
 
 ```{r}
 library(ggplot2)
+library(shiny)
+
+final_clean_nfl$logSalary <- log(final_clean_nfl$Salary)
 
 ui_salary <- fluidPage(
   titlePanel("Salary Histogram"),
@@ -156,14 +159,13 @@ ui_salary <- fluidPage(
 ```{r}
 server_salary <- function(input,output){
   output$histPlot <- renderPlot({      # use the Salary data from dataset
-    salary_data <- log10(final_clean_nfl$Salary)
+    salary_data <- (final_clean_nfl$logSalary)
  #Create the histogram with user-defined bins
- ggplot(data = data.frame(x = salary_data), aes(x = final_clean_nfl$Salary)) +
+ ggplot(data = data.frame(x = salary_data), aes(x = x)) +
    geom_histogram(bins = input$bins, fill = '#009E73', color = "white") +
-   scale_x_log10() +
   theme_minimal() +
    labs(
-     title = "Histogram of NFL Receiver 2024 Salaries",
+     title = "Histogram of NFL Receiver 2024 log-transformed Salaries",
      x = "log(Salary ($))",
      y = "Frequency"
      )
@@ -177,48 +179,60 @@ server_salary <- function(input,output){
 shinyApp(ui = ui_salary, server = server_salary)
 ```
 
-#### Plot 2: Scatter plots of Salary as as function of Touchdowns or Yards
+Because there is such a large range of salaries, we decided to use a log transformation on the salaries to minimize the impact of very high salaries. The log transformed salaries were used throughout the the data visualization.
 
-##### Salary as a function of Touchdowns:
+#### Plot 2: Scatter plots of Salary as as function of Touchdowns or Yards - Will use TD.
+
+##### Salary as a function of Touchdowns: 
+
+Used this site <https://stackoverflow.com/questions/15624656/label-points-in-geom-point> to add labels to specific points on the plot.
 
 ```{r}
-ggplot(final_clean_nfl, aes(x = TD, y = Salary)) +
+
+ggplot(final_clean_nfl, aes(x = TD, y = logSalary)) +
   geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
-  labs(title = "Salary vs. Touchdowns",
+  labs(title = "logSalary vs. Touchdowns",
        x = "Number of Touchdowns",
-       y = "2024 Salary ($)") +
+       y = "log(2024 Salary ($))") +
+  ylim(13, 17.5) +
   # add a verticle line at the median TD
-  geom_line(aes(x = median(final_clean_nfl$TD)), color = "grey") +
+  geom_vline(xintercept = median(final_clean_nfl$TD), color = "grey") +
   theme_minimal() +
   # label the players with highest salaries and highest number of touchdowns
-  geom_text(label = ifelse(final_clean_nfl$Salary > 12500000, final_clean_nfl$Player, ''), vjust = 1.4) +
+  geom_text(label = ifelse(final_clean_nfl$Salary > 12500000 & final_clean_nfl$Salary != 18100000, final_clean_nfl$Player, ''), vjust = 1.4) +
+  geom_text(label = ifelse(final_clean_nfl$Salary == 18100000, final_clean_nfl$Player, ''), vjust = -0.8) +
   geom_text(label = ifelse(final_clean_nfl$TD > 15, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
   geom_text(label = ifelse(final_clean_nfl$TD > 11 & final_clean_nfl$TD < 13, final_clean_nfl$Player, ''), vjust = -1) +
-  annotate("text", label = "Median TD", x = median(final_clean_nfl$TD), y = 22500000, color = "grey")
+  annotate("text", label = "Median TD", x = median(final_clean_nfl$TD), y = 17.5, color = "grey")
+
+
+geom_vline()
 ```
 
 There is no obvious trend between the total touchdowns made and a player's salary in 2024. However, it does appear that the players receiving the highest salaries are making more than the median number of touchdowns. That being said, the players making some of the highest numbers of touchdowns are not receiving very high salaries.
 
 The median was represented rather than the mean because the TD variable is skewed and has outliers.
 
-##### Salary as a function of Yards:
+##### Salary as a function of Yards: will not be using
 
 Used this site <https://stackoverflow.com/questions/15624656/label-points-in-geom-point> to add labels to specific points on the plot.
 
 ```{r}
-ggplot(final_clean_nfl, aes(x = Yds, y = Salary)) +
-  geom_point(size = 3, color = '#56B4E9') +   # size is for size of the points
-  labs(title = "Salary vs. Yards",
+ggplot(final_clean_nfl, aes(x = Yds, y = logSalary)) +
+  geom_point(size = 3, color = '#56B4E9') +
+  labs(title = "log(Salary) vs. Yards",
        x = "Yards travelled with ball",
-       y = "2024 Salary ($)") +
+       y = "log(2024 Salary ($))") +
+  ylim(13, 17.5) +
   # add a vertical line at the median Yds
-  geom_line(aes(x = median(final_clean_nfl$Yds)), color = "grey") +
+  geom_vline(xintercept = median(final_clean_nfl$Yds), color = "grey") +
   theme_minimal() +
   # highlight some of the highest salaries and some of the highest yards travelled
-  geom_text(label = ifelse(final_clean_nfl$Salary > 12500000, final_clean_nfl$Player, ''), vjust = 1.4) +
+  geom_text(label = ifelse(final_clean_nfl$Salary > 12500000 & final_clean_nfl$Salary != 18100000, final_clean_nfl$Player, ''), vjust = 1.4) +
+  geom_text(label = ifelse(final_clean_nfl$Salary == 18100000, final_clean_nfl$Player, ''), vjust = -0.8) +
   geom_text(label = ifelse(final_clean_nfl$Yds > 1600, final_clean_nfl$Player, ''), hjust = 0.7, vjust = 1.2) +
   geom_text(label = ifelse(final_clean_nfl$Yds > 1500 & final_clean_nfl$Yds < 1600, final_clean_nfl$Player, ''), vjust = -1) + 
-  annotate("text", label = "Median Yards", x = (median(final_clean_nfl$Yds) - 10), y = 22500000, color = "grey")
+  annotate("text", label = "Median Yards", x = (median(final_clean_nfl$Yds) - 10), y = 17.5, color = "grey")
 ```
 
 There is no clear trend between the yards travelled with the ball and a player's salary in 2024. Some of the players receiving the highest salaries are travelling more than the median number of yards, but some are very close to or below the median. That being said, the players travelling some of the greatest distances are not receiving very high salaries.
@@ -227,11 +241,11 @@ The two players who travelled the greatest number of yards with the ball did not
 
 The median was represented rather than the mean because the yards variable is skewed and appears to have outliers.
 
-#### Plot 3: Bar charts of Salary for top and bottom 10 touchdowns and yards. 
+#### Plot 3: Bar charts of Salary for top and bottom 10 touchdowns and yards.
 
 ##### Touchdowns: 
 
-Used this link <https://stackoverflow.com/questions/11857935/plot-the-average-values-for-each-level> to understand how to plot the average salary within each number of touchdowns on a geom_bar plot.
+NOTE: I think we should use the normal Salary variable here, not the log-transformed one, because the barplots are for seeing the highest/lowest in groups and I think that having log-transformed data distorts our view of that.
 
 ```{r}
 # sorting the dataset by the number of touchdowns. 
@@ -244,16 +258,23 @@ bottom10_TD_nfl <- tail(sorted_TD_nfl, 10)
 top10_TD_nfl <- head(sorted_TD_nfl, 10)
 
 # plotting bar chart of salaries for the players who made the 10 least touchdowns. 
-ggplot(bottom10_TD_nfl, aes(x = factor(TD), y = Salary)) +
-  geom_bar(stat = "summary", fun = "mean", fill = '#D55E00') +
-  labs(title = "Average 2024 Salary of Players with 10 Fewest Touchdowns", x = "Touchdowns", y = "2024 Salary ($)") + 
-  theme_minimal()
+ggplot(bottom10_TD_nfl, aes(x = factor(Player), y = Salary)) +
+  geom_bar(stat = "identity", fill = '#D55E00') +
+  labs(title = "Average 2024 Salary of Players with 10 Fewest Touchdowns", x = "Players with 10 Fewest Touchdowns", y = "2024 Salary ($)") + 
+  theme_minimal() +
+  # making the player names angled so they fit
+  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
+  geom_text(label = bottom10_TD_nfl$TD, vjust = 1)
 
 # and 10 most touchdowns. 
-ggplot(top10_TD_nfl, aes(x = factor(TD), y = Salary)) +
-  geom_bar(stat = "summary", fun = "mean", fill = '#D55E00') +
-  labs(title = "Average 2024 Salary of Players with 10 Highest Touchdowns", x = "Touchdowns", y = "2024 Salary ($)") + 
-  theme_minimal()
+ggplot(top10_TD_nfl, aes(x = factor(Player), y = Salary)) +
+  geom_bar(stat = "identity", fill = '#D55E00') +
+  labs(title = "Average 2024 Salary of Players with 10 Most Touchdowns", x = "Players with 10 Most Touchdowns", y = "2024 Salary ($)") + 
+  theme_minimal() +
+  ylim(0, 25000000) +
+  # making the player names angled so they fit
+  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
+  geom_text(label = top10_TD_nfl$TD, vjust = -0.5)
 ```
 
 NOTE: not really sure how useful these graphs are, because we don't really get much from touchdowns for this, because they are whole numbers so multiple people have the same number so we don't really get much.
@@ -270,13 +291,25 @@ sorted_Yds_nfl <- final_clean_nfl %>%
 bottom10_Yds_nfl <- tail(sorted_Yds_nfl, 10)
 top10_Yds_nfl <- head(sorted_Yds_nfl, 10)
 
-# plotting bar chart of salaries for the players who made the 10 least touchdowns. 
-ggplot(bottom10_Yds_nfl, aes(x = factor(Yds), y = Salary)) +
-  geom_bar(stat = "summary", fun = "mean", fill = '#56B4E9') +
-  labs(title = "Average 2024 Salary of Players with 10 Fewest Yards", x = "Total Yards", y = "2024 Salary ($)") + 
-  theme_minimal()
 
-# and 10 most touchdowns. 
+# plotting bar chart of salaries for the players who made the 10 fewestt yards .
+ggplot(bottom10_Yds_nfl, aes(x = factor(Player), y = Salary)) +
+  geom_bar(stat = "identity", fill = '#56B4E9') +
+  labs(title = "Average 2024 Salary of Players with 10 Fewest Yards", x = "Players with 10 Fewest Yards", y = "2024 Salary ($)") + 
+  theme_minimal() +
+  # making the player names angled so they fit
+  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
+  geom_text(label = bottom10_Yds_nfl$Yds, vjust = 1)
+
+# and 10 highest yards. 
+ggplot(top10_Yds_nfl, aes(x = factor(Player), y = Salary)) +
+  geom_bar(stat = "identity", fill = '#56B4E9') +
+  labs(title = "Average 2024 Salary of Players with 10 Highest Yards", x = "Players with 10 Highest Yards", y = "2024 Salary ($)") + 
+  theme_minimal() +
+  # making the player names angled so they fit
+  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
+  geom_text(label = top10_Yds_nfl$Yds, vjust = 1)
+
 ggplot(top10_Yds_nfl, aes(x = factor(Yds), y = Salary)) +
   geom_bar(stat = "summary", fun = "mean", fill = '#56B4E9') +
   labs(title = "Average 2024 Salary of Players with 10 Highest Yards", x = "Total Yards", y = "2024 Salary ($)") + 
@@ -284,30 +317,3 @@ ggplot(top10_Yds_nfl, aes(x = factor(Yds), y = Salary)) +
 ```
 
 Once again, not really sure how useful this will actually be for us.
-
-#### Plot 3 alternatives: Bar charts of Salary for all touchdowns or yards. 
-
-Instead tried just plotting average salary for each number of touchdowns or yards so we can see everything at once. I think this would be a bit more useful.
-
-##### Touchdowns:
-
-```{r}
-# plotting
-ggplot(sorted_TD_nfl, aes(x = factor(TD), y = Salary)) +
-  geom_bar(stat = "summary", fun = "mean", fill='#D55E00') +
-  labs(title = "Average 2024 Salary by Touchdowns", x = "Touchdowns", y = "2024 Salary ($)") + 
-  theme_minimal()
-```
-
-Can say from this that players making 10, 11, or 13 touchdowns tend to have a higher average salary than the other numbers of touchdowns. Making 13 touchdowns tends to result in the highest average salary, though this is because there was only one player in this category who happens to have a significant salary. Interestingly, making 17 touchdowns, the highest amount, resulted in a very low salary.
-
-##### Yards:
-
-```{r}
-ggplot(sorted_Yds_nfl, aes(x = Yds, y = Salary)) +
-  geom_bar(stat = "summary", fun = "mean", fill='#D55E00') +
-  labs(title = "Average 2024 Salary by Yards", x = "Total Yards", y = "2024 Salary ($)") + 
-  theme_minimal()
-```
-
-From this we can tell that both high and low salaries are present at each number of total yards. Need to fix the x axis though.
