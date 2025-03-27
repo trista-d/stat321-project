@@ -29,157 +29,11 @@ cleaned_nfl_data <- read_csv("final_clean_nfl.csv")
 View(final_clean_nfl)
 ```
 
-## Visualizations: Performance vs. Salary
+# Using only the lowest 80 capped values in a histogram - this will be plot 1 in report
 
-Big plays: Touchdowns vs. Salary
+From looking at salary histogram with raw data, we can see that the 2024 salaries of NFL recievers is heavily right skewed, with several extreme outliers with very high salaries. Then tried capping with the IQR method and it remained skewed still because there were a lot of upper outliers. So then cut outliers and found that worked best.
 
--   scatter for all
-
--   bar chart for top 10 and bottom 10
-
-Consistency: Yards vs. Salary
-
--   scatter for all
-
--   bar chart for top 10 and bottom 10
-
-**Plot 1: Histogram: Salary distribution among receivers.**
-
-**Plots 2 and 3: If yards by salary more important for scatter, do bar chart for the touchdowns.**
-
--   **do one or the other; one of each.**
-
-Plot 4: Heat map (use tableau). because everything should connect back to salary.
-
--   this will use catch rate in it, and the 20-39 and 40+ columns, compared to salary as the colours.
-
-Plot 5: Dashboard to support conclusions. So and so was the best of the season.
-
--   will pull the top plays from youtube and link them.
-
--   This will be a table with highlighted stuff and plays attached.
-
--   Will decide which players to put in the table/dashboard in based on figure results/regression results.
-
-#### Setup:
-
-##### Importing final cleaned data under name "final_clean_nfl".
-
-```{r}
-library(readr)
-final_clean_nfl <- read_csv("final_clean_nfl.csv")
-View(final_clean_nfl)
-```
-
-#### Plot 1: histogram of Salary
-
-##### UI:
-
-```{r}
-library(ggplot2)
-library(shiny)
-
-ui_salary <- fluidPage(
-  titlePanel("Salary Histogram"),
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("bins",
-                  "Number of Bins:",
-                  min= 5,
-                  max= 50,
-                  value= 10) #Default is 10bins
-
-      ),
-    mainPanel(
-      plotOutput("histPlot") #Output placeholder for the histogram
-      ) 
-    )
-  )
-```
-
-##### Server:
-
-```{r}
-server_salary <- function(input,output){
-  output$histPlot <- renderPlot({      # use the Salary data from dataset
-    salary_data <- final_clean_nfl$Salary
- #Create the histogram with user-defined bins
- ggplot(data = data.frame(x = salary_data), aes(x = final_clean_nfl$Salary)) +
-   geom_histogram(bins = input$bins, fill = '#009E73', color = "white") + 
-   # green for $$
-  theme_minimal() +
-   labs(
-     title = "Histogram of NFL Receiver 2024 Salaries",
-     x = "Salary ($)",
-     y = "Frequency"
-     )
-  })
-}
-```
-
-##### Running the app:
-
-```{r, eval = FALSE}
-shinyApp(ui = ui_salary, server = server_salary)
-```
-
-From the histogram, we can see that the 2024 salaries of NFL recievers is heavily right skewed, with several extreme outliers with very high salaries.
-
-The untransformed salaries were plotted on the x axis in order to accurately visualize just how much higher the outlier salaries are, since plotting the log10 or square root transformed salaries may distort our understanding of the data.
-
-#### Log transformation version - will not be using (most likely). 
-
-##### UI:
-
-```{r}
-final_clean_nfl$logSalary <- log(final_clean_nfl$Salary)
-
-ui_salary <- fluidPage(
-  titlePanel("Salary Histogram"),
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("bins",
-                  "Number of Bins:",
-                  min= 5,
-                  max= 50,
-                  value= 10) #Default is 10bins
-
-      ),
-    mainPanel(
-      plotOutput("histPlot") #Output placeholder for the histogram
-      ) 
-    )
-  )
-```
-
-##### Server:
-
-```{r}
-server_salary <- function(input,output){
-  output$histPlot <- renderPlot({      # use the Salary data from dataset
-    salary_data <- (final_clean_nfl$logSalary)
- #Create the histogram with user-defined bins
- ggplot(data = data.frame(x = salary_data), aes(x = x)) +
-   geom_histogram(bins = input$bins, fill = '#009E73', color = "white") +
-  theme_minimal() +
-   labs(
-     title = "Histogram of NFL Receiver 2024 log-transformed Salaries",
-     x = "log(Salary ($))",
-     y = "Frequency"
-     )
-  })
-}
-```
-
-##### Running the app:
-
-```{r}
-shinyApp(ui = ui_salary, server = server_salary)
-```
-
-#### Histogram of salaries if the top ones and one lower outlier are capped. 
-
-##### Capping the outlier salaries using IQR:
+##### Setup:
 
 ```{r}
 q1 <- quantile(final_clean_nfl$Salary, 0.25) 
@@ -188,64 +42,8 @@ iqr <- q3 - q1
 lower <- q1 - 1.5*iqr 
 upper <- q3 + 1.5*iqr   
 sal <- ifelse(final_clean_nfl$Salary < lower, lower, ifelse(final_clean_nfl$Salary > upper, upper, final_clean_nfl$Salary))
-
 sort(sal)
-```
 
-##### UI:
-
-```{r}
-library(ggplot2)
-
-ui_salary <- fluidPage(
-  titlePanel("Capped Salary Histogram"),
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("bins",
-                  "Number of Bins:",
-                  min= 5,
-                  max= 50,
-                  value= 10) #Default is 10bins
-
-      ),
-    mainPanel(
-      plotOutput("histPlot") #Output placeholder for the histogram
-      ) 
-    )
-  )
-```
-
-##### Server: 
-
-```{r}
-server_salary <- function(input,output){
-  output$histPlot <- renderPlot({      # use the Salary data from dataset
-    salary_data <- sal
- #Create the histogram with user-defined bins
- ggplot(data = data.frame(x = salary_data), aes(x = sal)) +
-   geom_histogram(bins = input$bins, fill = '#009E73', color = "white") + 
-   # green for $$
-  theme_minimal() +
-   labs(
-     title = "Histogram of Capped NFL Receiver 2024 Salaries",
-     x = "Capped Salary ($)",
-     y = "Frequency"
-     )
-  })
-}
-```
-
-##### Running the App: 
-
-```{r, eval = FALSE}
-shinyApp(ui = ui_salary, server = server_salary)
-```
-
-#### Using only the lowest 80 capped values in a histogram
-
-##### Setup:
-
-```{r}
 cutcap_nfl <- final_clean_nfl
 cutcap_nfl$capSalary <- sal
 cutcap_nfl <- cutcap_nfl %>%
@@ -302,154 +100,101 @@ server_salary <- function(input,output){
 shinyApp(ui = ui_salary, server = server_salary)
 ```
 
-Having kept only the 40 lowest salaries we reach a salary distribution that is closer to normally distributed. We will be using this capped and cut salary variable and its associated values for the rest of the analysis.
+Having kept only the 80 lowest salaries we reach a salary distribution that is closest to normally distributed of all our attempts. Even using Boxcox method (Trista's section), by cutting out the outliers that was closest to normally-distributed. We will be using this capped and cut salary variable and its associated values for any salary visualizations.
 
-#### Plot 2: Scatter plots of Salary as as function of Touchdowns or Yards
-
-##### Salary as a function of Touchdowns:
+# Plots based on Trista's modelling results
 
 Used this site <https://stackoverflow.com/questions/15624656/label-points-in-geom-point> to add labels to specific points on the plot.
 
-```{r}
-ggplot(cutcap_nfl, aes(x = TD, y = capSalary)) +
-  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
-  labs(title = "Salary vs. Touchdowns",
-       x = "Number of Touchdowns",
-       y = "2024 Salary ($)") +
-  ylim(500000, 1505000) +
-  # add a verticle line at the median TD
-  geom_vline(xintercept = mean(cutcap_nfl$TD), color = "grey") +
-  theme_minimal() +
-  # label the players with highest number of touchdowns
-  geom_text(label = ifelse(cutcap_nfl$TD > 15, cutcap_nfl$Player, ''), hjust = 0.7, vjust = -1) +
-  geom_text(label = ifelse(cutcap_nfl$TD > 11 & cutcap_nfl$TD < 13, cutcap_nfl$Player, ''), vjust = -1) +
-  annotate("text", label = "Mean TD", x = mean(cutcap_nfl$TD) + 1, y = 1500000, color = "grey")
-```
-
-Note that this is after capping upper and lower outlier salaries using the IQR method and then plotting only the lowest 80 salary values, as this produced a nearly normal histogram, and we decided to use these salaries for setting up the regressions.
-
-There is no obvious trend between the total touchdowns made and a player's salary in 2024.
-
-##### Salary as a function of Yards: will not be using
-
-Used this site <https://stackoverflow.com/questions/15624656/label-points-in-geom-point> to add labels to specific points on the plot.
+Salary \~ catchRate
 
 ```{r}
-ggplot(cutcap_nfl, aes(x = Yds, y = capSalary)) +
-  geom_point(size = 3, color = '#56B4E9') +
-  labs(title = "Salary vs. Yards",
-       x = "Yards travelled with ball",
-       y = "2024 Salary ($)") +
-  ylim(500000, 1505000) +
-  # add a vertical line at the median Yds
-  geom_vline(xintercept = mean(cutcap_nfl$Yds), color = "grey") +
-  theme_minimal() +
-  # highlight some of the highest salaries and some of the highest yards travelled
-  geom_text(label = ifelse(cutcap_nfl$Yds > 1600, cutcap_nfl$Player, ''), hjust = 0.7, vjust = 1.2) +
-  geom_text(label = ifelse(cutcap_nfl$Yds > 1500 & cutcap_nfl$Yds < 1600, cutcap_nfl$Player, ''), vjust = -1) + 
-  annotate("text", label = "Mean Yards", x = (mean(cutcap_nfl$Yds) + 110), y = 1500000, color = "grey")
-```
-
-There is no clear trend between the yards travelled with the ball and a player's salary in 2024.
-
-#### Plot 3: Bar charts of Salary for top and bottom 10 touchdowns and yards –\> do we want to use the regular dataset not capped here? To see the extent of the values?
-
-##### Touchdowns:
-
-NOTE: I think we should use the normal Salary variable here, not the log-transformed one, because the barplots are for seeing the highest/lowest in groups and I think that having log-transformed data distorts our view of that.
-
-```{r}
-# sorting the dataset by the number of touchdowns. 
+library(readr)
 library(dplyr)
-sorted_TD_nfl <- final_clean_nfl %>%
-  arrange(desc(TD))
+library(ggplot2)
 
-# creating new datasets of the top and bottom 10 number of touchdowns. 
-bottom10_TD_nfl <- tail(sorted_TD_nfl, 10)
-top10_TD_nfl <- head(sorted_TD_nfl, 10)
-
-# plotting bar chart of salaries for the players who made the 10 least touchdowns. 
-ggplot(bottom10_TD_nfl, aes(x = factor(Player), y = Salary)) +
-  geom_bar(stat = "identity", fill = '#D55E00') +
-  labs(title = "Average 2024 Salary of Players with 10 Fewest Touchdowns", x = "Players with 10 Fewest Touchdowns", y = "2024 Salary ($)") + 
-  theme_minimal() +
-  # making the player names angled so they fit
-  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
-  geom_text(label = bottom10_TD_nfl$TD, vjust = 1)
-
-# and 10 most touchdowns. 
-ggplot(top10_TD_nfl, aes(x = factor(Player), y = Salary)) +
-  geom_bar(stat = "identity", fill = '#D55E00') +
-  labs(title = "Average 2024 Salary of Players with 10 Most Touchdowns", x = "Players with 10 Most Touchdowns", y = "2024 Salary ($)") + 
-  theme_minimal() +
-  ylim(0, 25000000) +
-  # making the player names angled so they fit
-  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
-  geom_text(label = top10_TD_nfl$TD, vjust = -0.5)
-```
-
-##### Yards:
-
-```{r}
-# sorting the dataset by the number of touchdowns. 
-library(dplyr)
-sorted_Yds_nfl <- final_clean_nfl %>%
-  arrange(desc(Yds))
-
-# creating new datasets of the top and bottom 10 number of touchdowns. 
-bottom10_Yds_nfl <- tail(sorted_Yds_nfl, 10)
-top10_Yds_nfl <- head(sorted_Yds_nfl, 10)
-
-# plotting bar chart of salaries for the players who made the 10 fewestt yards .
-ggplot(bottom10_Yds_nfl, aes(x = factor(Player), y = Salary)) +
-  geom_bar(stat = "identity", fill = '#56B4E9') +
-  labs(title = "2024 Salary of Players with 10 Fewest Yards", x = "Players with 10 Fewest Yards", y = "2024 Salary ($)") + 
-  theme_minimal() +
-  # making the player names angled so they fit
-  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
-  geom_text(label = bottom10_Yds_nfl$Yds, vjust = 1)
-
-# and 10 highest yards. 
-ggplot(top10_Yds_nfl, aes(x = factor(Player), y = Salary)) +
-  geom_bar(stat = "identity", fill = '#56B4E9') +
-  labs(title = "2024 Salary of Players with 10 Highest Yards", x = "Players with 10 Highest Yards", y = "2024 Salary ($)") + 
-  theme_minimal() +
-  # making the player names angled so they fit
-  theme(axis.text.x = element_text(angle=45, vjust=1.07, hjust=1)) +
-  geom_text(label = top10_Yds_nfl$Yds, vjust = 1)
-```
-
-Trying with catch rate:
-
-```{r}
 ggplot(cutcap_nfl, aes(x = catchRate, y = capSalary)) +
-  geom_point(size = 3, color = '#56B4E9') +
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
   labs(title = "Salary vs. Catch Rate",
        x = "Catch Rate",
        y = "2024 Salary ($)") +
   ylim(500000, 1505000) +
-  # add a vertical line at the median Yds
+  # add a verticle line at the median TD
   geom_vline(xintercept = mean(cutcap_nfl$catchRate), color = "grey") +
   theme_minimal() +
-  # highlight some of the highest catch rates
-  geom_text(label = ifelse(cutcap_nfl$catchRate > 0.8, cutcap_nfl$Player, '')) +
-  annotate("text", label = "Mean Catch Rate", x = (mean(cutcap_nfl$catchRate)), y = 1500000, color = "grey")
+  # label the players with highest number of touchdowns
+  geom_text(label = ifelse(cutcap_nfl$catchRate > 0.90, cutcap_nfl$Player, ''), hjust = 0.7, vjust = -1) +
+  annotate("text", label = "Mean Catch Rate", x = mean(cutcap_nfl$catchRate), y = 1500000, color = "grey")
 ```
 
-try first down percentage.
+catchRate\~Rec.YAC.R
 
 ```{r}
-ggplot(cutcap_nfl, aes(x = X1st., y = capSalary)) +
-  geom_point(size = 3, color = '#56B4E9') +
-  labs(title = "Salary vs. First Down Percentage",
-       x = "Catch Rate",
-       y = "2024 Salary ($)") +
-  ylim(500000, 1505000) +
-  # add a vertical line at the median Yds
-  geom_vline(xintercept = mean(cutcap_nfl$X1st.), color = "grey") +
+ggplot(final_clean_nfl, aes(x = Rec.YAC.R, y = catchRate)) +
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
+  labs(title = "Catch Rate vs. Rec.YAC.R",
+       x = "Rec.YAC.R",
+       y = "Catch Rate") +
+  ylim(0.4, 1) +
+  xlim(60, 800) +
+  # add a vertical line at the median TD
+  geom_vline(xintercept = mean(final_clean_nfl$Rec.YAC.R), color = "grey") +
   theme_minimal() +
-  # highlight some of the highest catch rates
-  geom_text(label = ifelse(cutcap_nfl$X1st. > 1600, cutcap_nfl$Player, ''), hjust = 0.7, vjust = 1.2) +
-  geom_text(label = ifelse(cutcap_nfl$X1st. > 1500 & cutcap_nfl$X1st. < 1600, cutcap_nfl$Player, ''), vjust = -1) + 
-  annotate("text", label = "Mean First Down", x = (mean(cutcap_nfl$X1st.)), y = 1500000, color = "grey")
+  # label the players with highest number of touchdowns
+  geom_text(label = ifelse(final_clean_nfl$Rec.YAC.R > 550, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
+  annotate("text", label = "Mean Rec.YAC.R", x = mean(final_clean_nfl$Rec.YAC.R), y = 1, color = "grey")
+```
+
+Rec \~ Yds
+
+```{r}
+ggplot(final_clean_nfl, aes(x = Yds, y = Rec)) +
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
+  labs(title = "Rec vs. Yds",
+       x = "Yds",
+       y = "Rec") +
+  ylim(30, 130) +
+  xlim(300, 1800) +
+  # add a vertical line at the median TD
+  geom_vline(xintercept = mean(final_clean_nfl$Yds), color = "grey") +
+  theme_minimal() +
+  # label the players with highest number of touchdowns
+  geom_text(label = ifelse(final_clean_nfl$Yds > 1500, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
+  annotate("text", label = "Mean Yds", x = mean(final_clean_nfl$Yds), y = 120, color = "grey")
+```
+
+TD\~Yds
+
+```{r}
+ggplot(final_clean_nfl, aes(x = Yds, y = TD)) +
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
+  labs(title = "TD vs. Yds",
+       x = "Yds",
+       y = "TD") +
+  ylim(0, 18) +
+  xlim(300, 1800) +
+  # add a vertical line at the median TD
+  geom_vline(xintercept = mean(final_clean_nfl$Yds), color = "grey") +
+  theme_minimal() +
+  # label the players with highest number of touchdowns
+  geom_text(label = ifelse(final_clean_nfl$Yds > 1500, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
+  annotate("text", label = "Mean Yds", x = mean(final_clean_nfl$Yds), y = 17, color = "grey")
+```
+
+TD \~ Rec.1st
+
+```{r}
+ggplot(final_clean_nfl, aes(x = Rec.1st, y = TD)) +
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
+  labs(title = "TD vs. Rec.1st",
+       x = "Rec.1st",
+       y = "TD") +
+  ylim(0, 18) +
+  xlim(10, 80) +
+  # add a vertical line at the median TD
+  geom_vline(xintercept = mean(final_clean_nfl$Rec.1st), color = "grey") +
+  theme_minimal() +
+  # label the players with highest number of touchdowns
+  geom_text(label = ifelse(final_clean_nfl$Rec.1st > 60, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
+  annotate("text", label = "Mean Rec.1st", x = mean(final_clean_nfl$Rec.1st), y = 17, color = "grey")
 ```
