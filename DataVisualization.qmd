@@ -21,10 +21,11 @@ explain your dataset and analysis.
 ➢ Interactive visualizations are optional, but they can enhance your project and\
 improve your presentation score.
 
-## Import and Read Dataset - must redo for the final cleaned version
+## Import and Read Dataset
 
 ```{r}
 library(readr)
+library(dplyr)
 cleaned_nfl_data <- read_csv("final_clean_nfl.csv")
 View(final_clean_nfl)
 ```
@@ -55,6 +56,7 @@ cutcap_nfl <- head(cutcap_nfl, 80)
 
 ```{r}
 library(ggplot2)
+library(shiny)
 
 ui_salary <- fluidPage(
   titlePanel("Capped Salary Histogram"),
@@ -102,7 +104,7 @@ shinyApp(ui = ui_salary, server = server_salary)
 
 Having kept only the 80 lowest salaries we reach a salary distribution that is closest to normally distributed of all our attempts. Even using Boxcox method (Trista's section), by cutting out the outliers that was closest to normally-distributed. We will be using this capped and cut salary variable and its associated values for any salary visualizations.
 
-# Plots based on Trista's modelling results
+# Plots based on Trista's modeling results
 
 Used this site <https://stackoverflow.com/questions/15624656/label-points-in-geom-point> to add labels to specific points on the plot.
 
@@ -112,37 +114,21 @@ Salary \~ catchRate
 library(readr)
 library(dplyr)
 library(ggplot2)
+```
 
+```{r}
 ggplot(cutcap_nfl, aes(x = catchRate, y = capSalary)) +
-  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
+  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points    
   labs(title = "Salary vs. Catch Rate",
        x = "Catch Rate",
        y = "2024 Salary ($)") +
-  ylim(500000, 1505000) +
-  # add a verticle line at the median TD
+  ylim(500000, 1505000) + 
+  # add a vertical line at the mean catch rate, mean because normally distributed catch rate
   geom_vline(xintercept = mean(cutcap_nfl$catchRate), color = "grey") +
   theme_minimal() +
-  # label the players with highest number of touchdowns
+  # label the players with highest catch rates
   geom_text(label = ifelse(cutcap_nfl$catchRate > 0.90, cutcap_nfl$Player, ''), hjust = 0.7, vjust = -1) +
-  annotate("text", label = "Mean Catch Rate", x = mean(cutcap_nfl$catchRate), y = 1500000, color = "grey")
-```
-
-catchRate\~Rec.YAC.R
-
-```{r}
-ggplot(final_clean_nfl, aes(x = Rec.YAC.R, y = catchRate)) +
-  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
-  labs(title = "Catch Rate vs. Rec.YAC.R",
-       x = "Rec.YAC.R",
-       y = "Catch Rate") +
-  ylim(0.4, 1) +
-  xlim(60, 800) +
-  # add a vertical line at the median TD
-  geom_vline(xintercept = mean(final_clean_nfl$Rec.YAC.R), color = "grey") +
-  theme_minimal() +
-  # label the players with highest number of touchdowns
-  geom_text(label = ifelse(final_clean_nfl$Rec.YAC.R > 550, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
-  annotate("text", label = "Mean Rec.YAC.R", x = mean(final_clean_nfl$Rec.YAC.R), y = 1, color = "grey")
+    annotate("text", label = "Mean Catch Rate", x = mean(cutcap_nfl$catchRate), y = 1500000, color = "grey")
 ```
 
 Rec \~ Yds
@@ -150,17 +136,17 @@ Rec \~ Yds
 ```{r}
 ggplot(final_clean_nfl, aes(x = Yds, y = Rec)) +
   geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
-  labs(title = "Rec vs. Yds",
-       x = "Yds",
-       y = "Rec") +
+  labs(title = "Receptions vs. Yards",
+       x = "Yards",
+       y = "Receptions") +
   ylim(30, 130) +
   xlim(300, 1800) +
-  # add a vertical line at the median TD
-  geom_vline(xintercept = mean(final_clean_nfl$Yds), color = "grey") +
+  # add a vertical line at the median yards because skewed. 
+  geom_vline(xintercept = median(final_clean_nfl$Yds), color = "grey") +
   theme_minimal() +
-  # label the players with highest number of touchdowns
+  # label the players with highest number of yards
   geom_text(label = ifelse(final_clean_nfl$Yds > 1500, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
-  annotate("text", label = "Mean Yds", x = mean(final_clean_nfl$Yds), y = 120, color = "grey")
+  annotate("text", label = "Median Yds", x = median(final_clean_nfl$Yds), y = 120, color = "grey") 
 ```
 
 TD\~Yds
@@ -173,28 +159,16 @@ ggplot(final_clean_nfl, aes(x = Yds, y = TD)) +
        y = "TD") +
   ylim(0, 18) +
   xlim(300, 1800) +
-  # add a vertical line at the median TD
+  # add a vertical line at the median Yards because yards is skewed. 
   geom_vline(xintercept = mean(final_clean_nfl$Yds), color = "grey") +
   theme_minimal() +
-  # label the players with highest number of touchdowns
+  # label the players with highest number of yards
   geom_text(label = ifelse(final_clean_nfl$Yds > 1500, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
   annotate("text", label = "Mean Yds", x = mean(final_clean_nfl$Yds), y = 17, color = "grey")
 ```
 
-TD \~ Rec.1st
+# Will make dashboard with final results from Trista's modeling with stuff highlighted. 
 
 ```{r}
-ggplot(final_clean_nfl, aes(x = Rec.1st, y = TD)) +
-  geom_point(size = 3, color = '#D55E00') +   # size is for size of the points
-  labs(title = "TD vs. Rec.1st",
-       x = "Rec.1st",
-       y = "TD") +
-  ylim(0, 18) +
-  xlim(10, 80) +
-  # add a vertical line at the median TD
-  geom_vline(xintercept = mean(final_clean_nfl$Rec.1st), color = "grey") +
-  theme_minimal() +
-  # label the players with highest number of touchdowns
-  geom_text(label = ifelse(final_clean_nfl$Rec.1st > 60, final_clean_nfl$Player, ''), hjust = 0.7, vjust = -1) +
-  annotate("text", label = "Mean Rec.1st", x = mean(final_clean_nfl$Rec.1st), y = 17, color = "grey")
+hist(final_clean_nfl$catchRate)
 ```
