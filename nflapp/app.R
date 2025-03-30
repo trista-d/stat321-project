@@ -1,122 +1,15 @@
----
-title: "Data Visualization Final Project"
-author: "Karen Nickel"
-format: html
-editor: visual
----
+#
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    https://shiny.posit.co/
+#
 
-## Data Visualization Comments/Criteria
 
-8\. Can we use R packages like ggplot2 or plotly for visualization?\
-➢ Yes! You are free to use any R packages we discussed in class. Just make sure you\
-cite the package in the references.
+# This is the code for the app for final project!
 
-\
-9. How many visualizations are required?\
-➢ There is no fixed number, but you should create at least 3-5 visualizations that help\
-explain your dataset and analysis.
-
-\
-10. Do we need interactive visualizations?\
-➢ Interactive visualizations are optional, but they can enhance your project and\
-improve your presentation score.
-
-## Import and Read Dataset
-
-```{r}
-library(readr)
-library(dplyr)
-final_clean_nfl <- read_csv("final_clean_nfl.csv")
-View(final_clean_nfl)
-```
-
-# Using only the lowest 80 capped values in a histogram - this will be plot 1 in report
-
-From looking at salary histogram with raw data, we can see that the 2024 salaries of NFL recievers is heavily right skewed, with several extreme outliers with very high salaries. Then tried capping with the IQR method and it remained skewed still because there were a lot of upper outliers. So then cut outliers and found that worked best.
-
-##### Setup:
-
-```{r}
-q1 <- quantile(final_clean_nfl$Salary, 0.25) 
-q3 <- quantile(final_clean_nfl$Salary, 0.75) 
-iqr <- q3 - q1 
-lower <- q1 - 1.5*iqr 
-upper <- q3 + 1.5*iqr   
-sal <- ifelse(final_clean_nfl$Salary < lower, lower, ifelse(final_clean_nfl$Salary > upper, upper, final_clean_nfl$Salary))
-sort(sal)
-
-cutcap_nfl <- final_clean_nfl
-cutcap_nfl$capSalary <- sal
-cutcap_nfl <- cutcap_nfl %>%
-  arrange(capSalary)
-cutcap_nfl <- head(cutcap_nfl, 80)
-```
-
-##### UI:
-
-```{r}
-library(ggplot2)
-library(shiny)
-
-ui_salary <- fluidPage(
-  titlePanel("Capped Salary Histogram"),
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("bins",
-                  "Number of Bins:",
-                  min= 5,
-                  max= 50,
-                  value= 10) #Default is 10bins
-
-      ),
-    mainPanel(
-      plotOutput("histPlot") #Output placeholder for the histogram
-      ) 
-    )
-  )
-```
-
-##### Server:
-
-```{r}
-server_salary <- function(input,output){
-  output$histPlot <- renderPlot({      # use the Salary data from dataset
-    salary_data <- cutcap_nfl$capSalary
- #Create the histogram with user-defined bins
- ggplot(data = data.frame(x = salary_data), aes(x = cutcap_nfl$capSalary)) +
-   geom_histogram(bins = input$bins, fill = '#009E73', color = "white") + 
-   # green for $$
-  theme_minimal() +
-   labs(
-     title = "Histogram of Capped NFL Receiver 2024 Salaries",
-     x = "Capped Salary ($)",
-     y = "Frequency"
-     )
-  })
-}
-```
-
-##### Running the App:
-
-```{r, eval = FALSE}
-shinyApp(ui = ui_salary, server = server_salary)
-```
-
-Having kept only the 80 lowest salaries we reach a salary distribution that is closest to normally distributed of all our attempts. Even using Boxcox method (Trista's section), by cutting out the outliers that was closest to normally-distributed. We will be using this capped and cut salary variable and its associated values for any salary visualizations.
-
-#### + Plots based on Trista's modeling results:
-
--   Salary \~ catchRate
-
--   Rec \~ Yds
-
--   TD\~Yds
-
-### UI and app setup:
-
-This reference (<https://shiny.posit.co/r/articles/build/selecting-rows-of-data/>) was used to learn how to output a row from dataset when a point is clicked on the plot.
-
-```{r}
 # import data and install packages
 library(shiny)
 library(ggplot2)
@@ -180,11 +73,7 @@ ui_nfl <- fluidPage(
     )
   )
 )
-```
 
-### Server:
-
-```{r}
 # SERVER
 
 server_nfl<-function(input, output) {
@@ -241,7 +130,7 @@ server_nfl<-function(input, output) {
       theme_minimal() +
       # label the median yards line
       annotate("text", label = "Median Yards", x = median(TD_final_clean_nfl$Yards) + 65, y = 17, color = "darkgrey")
-    })
+  })
   output$Salselect <- renderText({
     paste("You selected the point:")
   })
@@ -261,13 +150,6 @@ server_nfl<-function(input, output) {
     nearPoints(TD_final_clean_nfl, input$TD_Yds_click, threshold = 10, maxpoints = 1)
   })
 }
-```
 
-### Running the app:
-
-```{r}
 # running the app
 shinyApp(ui = ui_nfl, server = server_nfl)
-```
-
-# Will make dashboard with final results from Trista's modeling with stuff highlighted.

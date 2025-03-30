@@ -1,0 +1,10 @@
+name: nflapp
+title:
+username: keni-17
+account: keni-17
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14375975
+bundleId: 10025743
+url: https://keni-17.shinyapps.io/nflapp/
+version: 1
