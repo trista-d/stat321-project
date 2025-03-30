@@ -5,6 +5,6 @@ account: keni-17
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14375975
-bundleId: 10025743
+bundleId: 10025765
 url: https://keni-17.shinyapps.io/nflapp/
 version: 1

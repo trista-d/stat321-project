@@ -101,7 +101,7 @@ server_nfl<-function(input, output) {
       geom_vline(xintercept = mean(cutcap_nfl$Catch_Rate), color = "darkgrey") +
       theme_minimal() +
       # label the mean catch rate line
-      annotate("text", label = "Mean Catch Rate", x = mean(cutcap_nfl$Catch_Rate) + 0.018, y = 1300000, color = "darkgrey")
+      annotate("text", label = "Mean Catch Rate", x = mean(cutcap_nfl$Catch_Rate), y = 1300000, color = "black")
   })
   output$Rec_Yds <- renderPlot({
     ggplot(Rec_final_clean_nfl, aes(x = Yards, y = Receptions)) +
@@ -115,7 +115,7 @@ server_nfl<-function(input, output) {
       geom_vline(xintercept = median(Rec_final_clean_nfl$Yards), color = "darkgrey") +
       theme_minimal() +
       # label the median yards line
-      annotate("text", label = "Median Yards", x = median(Rec_final_clean_nfl$Yards) + 65, y = 120, color = "darkgrey") 
+      annotate("text", label = "Median Yards", x = median(Rec_final_clean_nfl$Yards), y = 120, color = "black") 
   })
   output$TD_Yds <- renderPlot({
     ggplot(TD_final_clean_nfl, aes(x = Yards, y = Touchdowns)) +
@@ -129,7 +129,7 @@ server_nfl<-function(input, output) {
       geom_vline(xintercept = median(TD_final_clean_nfl$Yards), color = "darkgrey") +
       theme_minimal() +
       # label the median yards line
-      annotate("text", label = "Median Yards", x = median(TD_final_clean_nfl$Yards) + 65, y = 17, color = "darkgrey")
+      annotate("text", label = "Median Yards", x = median(TD_final_clean_nfl$Yards), y = 17, color = "black")
   })
   output$Salselect <- renderText({
     paste("You selected the point:")
