@@ -271,3 +271,26 @@ shinyApp(ui = ui_nfl, server = server_nfl)
 ```
 
 # Will make dashboard with final results from Trista's modeling with stuff highlighted.
+
+```{r}
+# salary predictions (sorted by actual salary)
+pred_salary <- read_csv("./statistical_modeling/salary_predictions.csv")[-1]
+salary_dt <- datatable(pred_salary, 
+                       options=list(order = list(list(4, 'desc')),
+                                    dom='Bfrtip',
+                                    buttons=c('csv', 'excel', 'pdf', 'print')),
+                       colnames=c("Player", "Catch Rate", "Predicted Salary", "Actual Salary"),
+                       caption="Interactive Salary Predictions")
+salary_dt %>% formatStyle('predicted', backgroundColor="lavender")
+```
+
+```{r}
+# touchdown predictions (sorted by actual number of touchdown)
+pred_td <- read_csv("./statistical_modeling/td_predictions.csv")[-1]
+td_dt <- datatable(pred_td, 
+          options=list(order = list(list(6, 'desc'))),
+          colnames=c("Player", "Receptions over 40 yds", "1st Down Receptions", 
+                     "Targets", "Predicted Touchdowns", "Actual Touchdowns"),
+          caption="Interactive Touchdown Predictions")
+td_dt %>% formatStyle('predicted', backgroundColor="lavender")
+```
