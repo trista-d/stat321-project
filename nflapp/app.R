@@ -81,8 +81,7 @@ server_nfl<-function(input, output) {
   output$SalaryHist <- renderPlot({
     salary_data <- cutcap_nfl$Salary
     ggplot(data = data.frame(x = salary_data), aes(x = cutcap_nfl$Salary)) +
-      geom_histogram(fill = '#b2c655', color = "white", bins = input$bins) + # still need to add in the slider
-      # green for $$
+      geom_histogram(fill = '#b2c655', color = "white", bins = input$bins) + 
       theme_minimal() +
       labs(
         title = "Histogram of Capped NFL Receiver 2024 Salaries",
