@@ -28,7 +28,7 @@ https://drive.google.com/drive/folders/1dXceNzpAEclrKUWVYZj2N565gyCdMTWv?usp=sha
       - box-cox transformation
   2. TD ~ Yds
   3. Step-wise models
-    - TD ~ X40. + Rec.1st + Tgts
-    - Salary ~ Rec + Yds + TD + Rec.YAC.R
+      - TD ~ X40. + Rec.1st + Tgts
+      - Salary ~ Rec + Yds + TD + Rec.YAC.R
   
   
