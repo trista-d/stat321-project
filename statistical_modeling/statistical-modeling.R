@@ -177,7 +177,7 @@ pred_salary <- data.frame(Player=Player[1:80],
                           catchRate=round(catchRate[1:80], 3),
                           predicted=predicted_sal,
                           actual=removed_sal,
-                          difference=abs(predicted_sal-removed_sal))
+                          difference=predicted_sal-removed_sal)
 
 # predict touchdowns (using step-wise model)
 predicted_td <- round(predict(td_step, 
@@ -185,7 +185,7 @@ predicted_td <- round(predict(td_step,
                                                  Tgts=Tgts),type='response'))
 pred_td <- data.frame(Player=Player, Rec.over.40.yds=X40., Rec.1st=Rec.1st, 
                       Tgts=Tgts, predicted=predicted_td, actual=TD,
-                      difference=abs(predicted_td-TD))
+                      difference=predicted_td-TD)
 
 # export prediction data
 write.csv(pred_salary, "./deployment/salary/salary_predictions.csv")

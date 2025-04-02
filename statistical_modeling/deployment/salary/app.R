@@ -21,8 +21,10 @@ server <- function(input, output) {
                                         buttons=c('csv', 'pdf', 'print')),
                            extensions = 'Buttons',
                            colnames=c("Player", "Catch Rate", "Predicted Salary", 
-                                      "Actual Salary", "|Actual - Predicted|"))%>% 
-    formatStyle('predicted', backgroundColor="lavender")
+                                      "Actual Salary", "Actual - Predicted"))%>% 
+    formatStyle('predicted', backgroundColor="lavender") %>%
+    formatStyle('difference', backgroundColor=styleInterval(0, c('mistyrose', 
+                                                                 'white')))
     
   })
 }
