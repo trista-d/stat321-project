@@ -1,4 +1,6 @@
 # NFL Receiver Performance Analysis
+This project is for the Spring 2025 offering of STAT 321: Data Management and Presentation.
+
 ## Data
 https://www.nfl.com/stats/player-stats/category/receiving/2024/REG/all/receivingreceptions/DESC
 https://www.spotrac.com/nfl/rankings/player/_/year/2024/sort/cap_base
