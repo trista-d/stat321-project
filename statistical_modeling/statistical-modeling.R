@@ -70,12 +70,12 @@ abline(h=0)
 
 # box-cox transformation
 # https://www.r-bloggers.com/2022/10/box-cox-transformation-in-r/
-MASS::boxcox(model) # CI in plot does not contain 1, so continue with transform
+MASS::boxcox(model1) # CI in plot does not contain 1, so continue with transform
 
 # default = 6
 options(digits=10)
 
-b <- MASS::boxcox(model)
+b <- MASS::boxcox(model1)
 lambda <- b$x[which.max(b$y)]
 b.salary <- (Salary^lambda - 1) / lambda
 
@@ -109,15 +109,6 @@ new_data <- data %>% select(Rec, Yds, TD, X20., X40., X20.39, X1st.,
                             Rec.YAC.R, Tgts, catchRate)
 pairs(new_data)
 
-# Rec.YAC.R (Not Using)
-# plot(catchRate, Rec.YAC.R)
-#yac.catchrate <- lm(catchRate~Rec.YAC.R)
-# summary(yac.catchrate)
-# qqnorm(yac.catchrate$residuals)
-# plot(yac.catchrate$fitted.values, yac.catchrate$residuals)
-# abline(h=0)
-
-
 # POISSON MODELS
 # Rec ~ Yds
 hist(Rec)
@@ -135,7 +126,6 @@ plot(Rec~Yds)
 lines(x=Yds, y=predict(rec.yds, data, type = "response")*10, col="red")
 
 
-
 # TD ~ Yds
 hist(TD)
 
@@ -148,16 +138,6 @@ qqnorm(td.yds$residuals)
 qqline(td.yds$residuals)
 plot(td.yds$fitted.values, td.yds$residuals)
 abline(h=0)
-
-
-# TD ~ Rec.1st (Not Using)
-#hist(TD)
-#plot(TD ~ Rec.1st)
-#td.rec.1st <- glm(TD ~ Rec.1st, family='poisson')
-#summary(td.rec.1st)
-#qqnorm(td.rec.1st$residuals)
-#plot(td.rec.1st$fitted.values, td.rec.1st$residuals)
-#abline(h=0)
 
 
 # MULTIPLE REGRESSION
@@ -186,24 +166,27 @@ plot(sal_step$fitted.values, sal_step$residuals)
 abline(h=0)
 
 
-# DASHBOARDS 
+# DASHBOARDS
 # Source: https://rstudio.github.io/DT/options.html
 library(DT)
 
 # predict salaries from catchRate (using best model 1)
+predicted_sal <- round(predict(model.rem, newdata=data.frame(
+  catchRate=catchRate[1:80])))
 pred_salary <- data.frame(Player=Player[1:80],
                           catchRate=round(catchRate[1:80], 3),
-                          predicted=round(predict(model.rem, newdata=data.frame(
-                            catchRate=catchRate[1:80]))),
-                          actual=removed_sal)
+                          predicted=predicted_sal,
+                          actual=removed_sal,
+                          difference=predicted_sal-removed_sal)
 
 # predict touchdowns (using step-wise model)
+predicted_td <- round(predict(td_step, 
+                              newdata=data.frame(X40.=X40., Rec.1st=Rec.1st,
+                                                 Tgts=Tgts),type='response'))
 pred_td <- data.frame(Player=Player, Rec.over.40.yds=X40., Rec.1st=Rec.1st, 
-                      Tgts=Tgts, predicted=round(predict(td_step, 
-                                newdata=data.frame(X40.=X40., Rec.1st=Rec.1st,
-                                                   Tgts=Tgts),type='response')),
-                      actual=TD)
+                      Tgts=Tgts, predicted=predicted_td, actual=TD,
+                      difference=abs(predicted_td-TD))
 
 # export prediction data
-write.csv(pred_salary, "./salary_predictions.csv")
-write.csv(pred_td, "./td_predictions.csv")
+write.csv(pred_salary, "./deployment/salary/salary_predictions.csv")
+write.csv(pred_td, "./deployment/touchdowns/td_predictions.csv")

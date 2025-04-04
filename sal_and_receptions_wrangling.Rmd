@@ -1,0 +1,188 @@
+---
+title: "data_aggregationFP"
+author: "Brianne Smith"
+date: "2025-03-12"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+```{r}
+#import player data from nfl
+receiving_data<- read.csv(file = "c://Users//bsket//Documents//UVIC//UVIC Spring 2025//Stat321//finalproject//nfl_receiving_data.csv",header = TRUE)
+
+head(receiving_data)
+```
+```{r}
+#dimensions of orginal player data
+dim(receiving_data)
+```
+
+```{r}
+#import wide receiver data from csv
+wr_salary<- read.csv(file = "c://Users//bsket//Documents//UVIC//UVIC Spring 2025//Stat321//finalproject//nfl_salary_wr.csv", header = TRUE)
+```
+
+```{r}
+#original dimensions of Wide receiver salary data
+dim(wr_salary)
+```
+
+```{r}
+#remove team column from salary table
+wr_salary<- wr_salary[-c(2)]
+```
+
+
+
+```{r}
+#remove NA values (introduced as artifact when scraping, not actual data rows)
+wr_salary<- na.omit(wr_salary)
+head(wr_salary)
+```
+
+```{r}
+#import Tight End Salary data from csv
+te_salary <- read.csv(file = "c://Users//bsket//Documents//UVIC//UVIC Spring 2025//Stat321//finalproject//nfl_salary_te.csv", header = TRUE)
+```
+
+```{r}
+#dimensions of Tight End salary dataset
+dim(te_salary)
+```
+
+```{r}
+#remove team column from salary table
+te_salary<- te_salary[-c(2)]
+```
+
+```{r}
+#remove extra text characters in Salary column
+te_salary$Salary<- gsub("\n", "", te_salary$Salary)
+```
+
+```{r}
+#remove na vals from export artifact in scraping
+te_salary<- na.omit(te_salary)
+```
+
+```{r}
+head(te_salary)
+
+```
+
+```{r}
+#combine the two salary dataframes into one. 
+all_players_salary<- rbind(wr_salary, te_salary)
+head(all_players_salary)
+
+```
+
+```{r}
+#dimensions of combined salary dataset
+dim(all_players_salary)
+```
+
+
+```{r}
+#check for and remove duplicates
+all_players_salary<- all_players_salary[!duplicated(all_players_salary),]
+head(all_players_salary)
+```
+```{r}
+#check to see if dimensions change
+dim(all_players_salary)
+#since no change in dimensions after checking for duplicates, can assume none
+```
+
+
+```{r}
+#merge the player data data frame with the salary data frame
+
+library(dplyr)
+total_data <- receiving_data %>%
+  left_join(all_players_salary, by="Player")
+head(total_data)
+
+```
+
+```{r}
+#check dimensions of full data set
+dim(total_data)
+```
+
+```{r}
+#create a new column for catch rate (receptions/ targets)
+total_data$catchRate <- (total_data$Rec/ total_data$Tgts)
+#head(total_data)
+```
+```{r}
+#remove LNG column (longest play)
+total_data<- total_data[-c(7)]
+#head(total_data)
+```
+
+```{r}
+#plays between 20-39 yds.
+total_data$X20.39<- total_data$X20.- total_data$X40.
+#head(total_data)
+```
+
+```{r}
+#remove players with less than 25 receptions
+total_data1<- total_data[total_data$Rec >= 25,]
+#head(total_data1)
+```
+
+
+```{r}
+#ordering the data by receptions
+cleaned<- total_data1[order(total_data1$Rec, decreasing = TRUE),]
+head(cleaned)
+
+```
+
+
+
+```{r}
+#convert salary column to a numeric data type.
+cleaned$Salary<- as.numeric(gsub("[$,]", "", cleaned$Salary))
+head(cleaned)
+
+```
+```{r}
+#manually inputting salary data for two players.
+#keep known wr/te players with missing salaries.
+cleaned[11, 12]<- 3000000
+cleaned[13,12]<-1449106
+cleaned[33,12]<-8000000
+cleaned[42,12]<-1125000
+```
+
+
+```{r}
+#any players without salary are omitted from df.
+#since running backs included in NFL reception dataset, and not included
+#for analysis
+cleaned<- na.omit(cleaned)
+head(cleaned)
+
+cleaned
+```
+```{r}
+dim(cleaned)
+```
+
+```{r}
+#group decision to limit data to the first 105 rows.
+final_cleaned<- head(cleaned, 105)
+dim(final_cleaned)
+#head(final_cleaned)
+```
+
+```{r}
+#final clean data, salary is numeric.
+write.csv(final_cleaned, "final_clean_nfl.csv")
+```
+
