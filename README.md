@@ -3,8 +3,17 @@
 https://www.nfl.com/stats/player-stats/category/receiving/2024/REG/all/receivingreceptions/DESC
 https://www.spotrac.com/nfl/rankings/player/_/year/2024/sort/cap_base
 
-## Report
-https://drive.google.com/drive/folders/1dXceNzpAEclrKUWVYZj2N565gyCdMTWv?usp=sharing
+## Final Report
+https://drive.google.com/file/d/19M-23kc2UMkVeUKICuBygVK5mRa5jpH3/view?usp=sharing
+
+## Roles
+- **Makenna**: Dataset selection, motivation & conclusions
+- **Brianne**: Data cleaning & wrangling
+- **Karen**: Data visualization
+- **Trista**: Statistical analysis & modeling
+- **All members**: Presentation slides & writing
+
+**<ins>Note</ins>**: All members equally contributed recommendations, suggestions, and ideas to the execution of every section. The bulk of each section was written/coded by the section leader, but the project was highly collaborative! 
 
 ## Variables
 - Rec - # receptions
