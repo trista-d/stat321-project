@@ -23,10 +23,8 @@ server <- function(input, output) {
                        colnames=c("Player", "Receptions over 40 yds", 
                                   "1st Down Receptions", "Targets", 
                                   "Predicted Touchdowns", 
-                                  "Actual Touchdowns","Actual - Predicted")) %>% 
-      formatStyle('predicted', backgroundColor="lavender") %>%
-      formatStyle('difference', backgroundColor=styleInterval(-1, c('mistyrose', 
-                                                                   'white')))
+                                  "Actual Touchdowns","|Actual - Predicted|")) %>% 
+      formatStyle('predicted', backgroundColor="lavender")
     
   })
 }

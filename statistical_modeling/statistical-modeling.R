@@ -185,7 +185,7 @@ predicted_td <- round(predict(td_step,
                                                  Tgts=Tgts),type='response'))
 pred_td <- data.frame(Player=Player, Rec.over.40.yds=X40., Rec.1st=Rec.1st, 
                       Tgts=Tgts, predicted=predicted_td, actual=TD,
-                      difference=predicted_td-TD)
+                      difference=abs(predicted_td-TD))
 
 # export prediction data
 write.csv(pred_salary, "./deployment/salary/salary_predictions.csv")
